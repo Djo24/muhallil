@@ -7,11 +7,13 @@ export async function extractTextFromFile(file: File): Promise<string> {
 
   if (file.type === "application/pdf") {
     try {
-      const pdfParse = require("pdf-parse");
-      const pdfData = await pdfParse(buffer);
-      const text = pdfData.text || "";
+      const { PDFParse } = require("pdf-parse");
+      const parser = new PDFParse({ data: buffer });
+      const result = await parser.getText();
+      await parser.destroy();
+      const text = result.text || "";
       if (text.trim().length < 50) {
-        return `[PDF file: ${file.name} - Pages: ${pdfData.numpages || "?"}, Limited text extracted: ${text.trim().substring(0, 200)}]`;
+        return `[PDF file: ${file.name} - Pages: ${result.totalPages || "?"}, Limited text extracted: ${text.trim().substring(0, 200)}]`;
       }
       return text;
     } catch (e) {
