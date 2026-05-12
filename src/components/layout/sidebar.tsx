@@ -12,9 +12,7 @@ import {
   LogOut,
   Menu,
   X,
-  LayoutDashboard,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn, getPlanName } from "@/lib/utils";
 import { signOut } from "next-auth/react";

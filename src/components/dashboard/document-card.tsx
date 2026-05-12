@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Clock, ChevronRight } from "lucide-react";
-import { formatDateRelative, getFileIcon } from "@/lib/utils";
+import { formatDateRelative } from "@/lib/utils";
 import { DocumentWithAnalysis } from "@/types";
 
 interface DocumentCardProps {

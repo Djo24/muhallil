@@ -40,8 +40,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const result = await askDocument(question, document.rawText);
     return NextResponse.json(result);
   } catch (e) {
+    console.error("Ask error:", e);
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "Failed to process question" },
+      { error: "Failed to process question" },
       { status: 500 }
     );
   }

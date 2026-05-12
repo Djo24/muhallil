@@ -43,8 +43,6 @@ export interface UserProfile {
   stripeSubscriptionId: string | null;
 }
 
-export type Plan = "free" | "pro" | "business";
-
 export const ALLOWED_FILE_TYPES = [
   "application/pdf",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -53,9 +51,3 @@ export const ALLOWED_FILE_TYPES = [
   "image/jpeg",
 ];
 export const MAX_FILE_SIZE = 25 * 1024 * 1024;
-
-export const PLAN_LIMITS: Record<string, number> = {
-  free: 3,
-  pro: 30,
-  business: Infinity,
-};

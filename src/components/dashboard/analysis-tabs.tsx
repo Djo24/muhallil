@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
 import { DocumentWithAnalysis } from "@/types";
 import { formatDate } from "@/lib/utils";
 import {
@@ -69,7 +68,7 @@ export function AnalysisTabs({ document, allDocuments, userPlan = "free" }: Anal
       if (!res.ok) throw new Error("Failed to update title");
       toast.success("Title updated");
       setIsEditingTitle(false);
-    } catch (e) {
+    } catch {
       toast.error("Failed to update title");
     }
   };
@@ -80,7 +79,7 @@ export function AnalysisTabs({ document, allDocuments, userPlan = "free" }: Anal
       if (!res.ok) throw new Error("Failed to delete");
       toast.success("Document deleted");
       router.push("/dashboard");
-    } catch (e) {
+    } catch {
       toast.error("Failed to delete");
     }
   };
@@ -106,7 +105,7 @@ export function AnalysisTabs({ document, allDocuments, userPlan = "free" }: Anal
         updated[updated.length - 1] = { q: query, a: data.answer, sections: data.relevantSections || [] };
         return updated;
       });
-    } catch (e) {
+    } catch {
       setChat((prev) => {
         const updated = [...prev];
         updated[updated.length - 1] = { q: query, a: "Sorry, I couldn't process that question. Please try again.", sections: [] };
@@ -129,7 +128,7 @@ export function AnalysisTabs({ document, allDocuments, userPlan = "free" }: Anal
       if (!res.ok) throw new Error("Comparison failed");
       const data = await res.json();
       setComparison(data);
-    } catch (e) {
+    } catch {
       toast.error("Failed to compare documents");
     } finally {
       setIsComparing(false);

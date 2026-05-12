@@ -29,14 +29,6 @@ export function formatDateRelative(date: Date | string): string {
   return formatDate(date);
 }
 
-export function getFileIcon(fileType: string): string {
-  if (fileType.includes("pdf")) return "file-text";
-  if (fileType.includes("word") || fileType.includes("docx")) return "file-text";
-  if (fileType.includes("text") || fileType.includes("txt")) return "file-text";
-  if (fileType.includes("image") || fileType.includes("png") || fileType.includes("jpg") || fileType.includes("jpeg")) return "image";
-  return "file";
-}
-
 export function getPlanLimit(plan: string): number {
   switch (plan) {
     case "free": return 3;

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DocumentWithAnalysis, UserProfile } from "@/types";
-import { FileText, Upload, Search, Inbox } from "lucide-react";
+import { Upload, Search, Inbox } from "lucide-react";
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -19,27 +19,29 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      const [docsRes, userRes] = await Promise.all([
-        fetch("/api/documents"),
-        fetch("/api/user"),
-      ]);
-      if (docsRes.ok) {
-        setDocuments(await docsRes.json());
-      }
-      if (userRes.ok) {
-        setUserProfile(await userRes.json());
-      }
+    let cancelled = false;
+    const fetchData = async () => {
+      try {
+        const [docsRes, userRes] = await Promise.all([
+          fetch("/api/documents"),
+          fetch("/api/user"),
+        ]);
+        if (cancelled) return;
+        if (docsRes.ok) {
+          setDocuments(await docsRes.json());
+        }
+        if (userRes.ok) {
+          setUserProfile(await userRes.json());
+        }
     } catch {
-      // handled by error boundary
+      console.error("Failed to fetch dashboard data");
     } finally {
-      setLoading(false);
-    }
-  };
+        if (!cancelled) setLoading(false);
+      }
+    };
+    fetchData();
+    return () => { cancelled = true; };
+  }, []);
 
   const plan = userProfile?.plan || (session?.user as { plan?: string })?.plan || "free";
   const documentsUsed = userProfile?.documentsUsed ?? (session?.user as { documentsUsed?: number })?.documentsUsed ?? 0;

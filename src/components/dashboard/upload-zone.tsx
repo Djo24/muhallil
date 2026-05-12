@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { ALLOWED_FILE_TYPES, MAX_FILE_SIZE } from "@/types";
+import { MAX_FILE_SIZE } from "@/types";
 import { toast } from "sonner";
 
 type UploadStage = "idle" | "uploading" | "extracting" | "analyzing" | "done" | "error";

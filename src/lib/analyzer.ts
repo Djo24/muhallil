@@ -1,22 +1,11 @@
 import OpenAI from "openai";
+import type { AnalysisResult } from "@/types";
 
 function getOpenAI() {
   if (!process.env.OPENAI_API_KEY) {
     throw new Error("OPENAI_API_KEY is not configured");
   }
   return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-}
-
-export interface AnalysisResult {
-  documentType: string;
-  oneSentenceSummary: string;
-  executiveSummary: string;
-  detailedSummary: { section: string; point: string }[];
-  decisionsRequired: string[];
-  dates: { date: string; context: string; urgency: string }[];
-  financials: { amount: string; currency: string; context: string }[];
-  people: { name: string; role: string; organization: string }[];
-  risks: { type: string; section: string; description: string; severity: "low" | "medium" | "high" }[];
 }
 
 const SYSTEM_PROMPT = `You are an expert legal and business document analyst. Analyze the provided document text and extract structured information. Return ONLY valid JSON with this exact structure:

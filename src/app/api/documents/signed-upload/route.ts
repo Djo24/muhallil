@@ -38,8 +38,9 @@ export async function POST(req: NextRequest) {
       publicUrl: supabase.storage.from("documents").getPublicUrl(data.path).data.publicUrl,
     });
   } catch (e) {
+    console.error("Signed upload error:", e);
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "Failed to create upload URL" },
+      { error: "Failed to create upload URL" },
       { status: 500 }
     );
   }

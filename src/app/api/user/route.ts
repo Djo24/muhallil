@@ -30,7 +30,7 @@ export async function GET() {
     }
 
     return NextResponse.json(user);
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: "Failed to fetch user" }, { status: 500 });
   }
 }
@@ -51,7 +51,7 @@ export async function PUT(req: NextRequest) {
         return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
       }
 
-      let user = await prisma.user.findUnique({ where: { id: session.user.id } });
+      const user = await prisma.user.findUnique({ where: { id: session.user.id } });
       let customerId = user?.stripeCustomerId;
 
       if (!customerId) {
@@ -112,7 +112,7 @@ export async function PUT(req: NextRequest) {
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: "Failed to process request" }, { status: 500 });
   }
 }

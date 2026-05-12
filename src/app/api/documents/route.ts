@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -13,10 +13,23 @@ export async function GET(req: NextRequest) {
     const documents = await prisma.document.findMany({
       where: { userId: session.user.id },
       orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        userId: true,
+        title: true,
+        fileName: true,
+        fileType: true,
+        fileUrl: true,
+        status: true,
+        documentType: true,
+        oneSentenceSummary: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
 
     return NextResponse.json(documents);
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: "Failed to fetch documents" }, { status: 500 });
   }
 }

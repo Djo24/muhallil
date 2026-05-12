@@ -20,9 +20,11 @@ export default function LoginPage() {
   const [hasGoogle, setHasGoogle] = useState(false);
 
   useEffect(() => {
-    getProviders().then((providers) => {
-      setHasGoogle(!!providers?.google);
-    });
+    getProviders()
+      .then((providers) => {
+        setHasGoogle(!!providers?.google);
+      })
+      .catch(() => {});
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

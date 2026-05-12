@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -8,6 +9,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const router = useRouter();
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
 
   if (status === "loading") {
     return (
@@ -33,7 +40,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   if (status === "unauthenticated") {
-    router.push("/login");
     return null;
   }
 

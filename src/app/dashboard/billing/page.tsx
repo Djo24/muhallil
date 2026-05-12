@@ -12,28 +12,27 @@ import { CreditCard, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
 export default function BillingPage() {
-  const { data: session, update } = useSession();
+  const { update } = useSession();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchUserProfile();
-  }, []);
-
-  const fetchUserProfile = async () => {
-    try {
-      const res = await fetch("/api/user");
-      if (res.ok) {
-        const data = await res.json();
-        setUserProfile(data);
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/user");
+        if (!cancelled && res.ok) {
+          setUserProfile(await res.json());
+        }
+      } catch {
+        if (!cancelled) toast.error("Failed to load billing info");
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-    } catch {
-      toast.error("Failed to load billing info");
-    } finally {
-      setLoading(false);
-    }
-  };
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const plan = userProfile?.plan || "free";
   const planName = getPlanName(plan);
@@ -62,7 +61,7 @@ export default function BillingPage() {
         throw new Error(data.error || "Checkout failed");
       }
       const { url } = await res.json();
-      window.location.href = url;
+      window.location.assign(url);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to start checkout");
     } finally {
@@ -80,7 +79,7 @@ export default function BillingPage() {
       });
       if (!res.ok) throw new Error("Portal session failed");
       const { url } = await res.json();
-      window.location.href = url;
+      window.location.assign(url);
     } catch {
       toast.error("Failed to open billing portal");
     } finally {
@@ -99,7 +98,8 @@ export default function BillingPage() {
       });
       if (!res.ok) throw new Error("Cancellation failed");
       toast.success("Subscription cancelled");
-      await fetchUserProfile();
+      const profileRes = await fetch("/api/user");
+      if (profileRes.ok) setUserProfile(await profileRes.json());
       await update();
     } catch {
       toast.error("Failed to cancel subscription");

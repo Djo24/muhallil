@@ -20,31 +20,37 @@ export default function DocumentPage() {
   const userPlan = (session?.user as { plan?: string })?.plan || "free";
 
   useEffect(() => {
-    fetchDocument();
-    fetchAllDocuments();
-  }, [params.id]);
+    let cancelled = false;
+    const fetchDocument = async () => {
+      try {
+        const res = await fetch(`/api/documents/${params.id}`);
+        if (cancelled) return;
+        if (!res.ok) throw new Error("Document not found");
+        const data = await res.json();
+        setDocument(data);
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load document");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
 
-  const fetchDocument = async () => {
-    try {
-      const res = await fetch(`/api/documents/${params.id}`);
-      if (!res.ok) throw new Error("Document not found");
-      const data = await res.json();
-      setDocument(data);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load document");
-    } finally {
-      setLoading(false);
+    const fetchAllDocuments = async () => {
+      try {
+        const res = await fetch("/api/documents");
+        if (cancelled) return;
+        if (res.ok) {
+          setAllDocuments(await res.json());
+        }
+    } catch {
+      // silently ignore — this is a secondary fetch
     }
   };
 
-  const fetchAllDocuments = async () => {
-    try {
-      const res = await fetch("/api/documents");
-      if (res.ok) {
-        setAllDocuments(await res.json());
-      }
-    } catch {}
-  };
+    fetchDocument();
+    fetchAllDocuments();
+    return () => { cancelled = true; };
+  }, [params.id]);
 
   if (loading) {
     return (
