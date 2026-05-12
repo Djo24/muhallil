@@ -59,41 +59,80 @@ export function UploadZone() {
     if (mode === "url" && !url.trim()) return;
 
     setStage("uploading");
-    setProgress(20);
+    setProgress(10);
     setError("");
 
     try {
-      const formData = new FormData();
       if (mode === "file" && selectedFile) {
-        formData.append("file", selectedFile);
+        // 1. Get signed upload URL
+        setProgress(15);
+        const signedRes = await fetch("/api/documents/signed-upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fileName: selectedFile.name, fileType: selectedFile.type }),
+        });
+        if (!signedRes.ok) {
+          const err = await signedRes.json();
+          throw new Error(err.error || "Failed to get upload URL");
+        }
+        const { signedUrl, path: signedPath, publicUrl } = await signedRes.json();
+
+        // 2. Upload directly to Supabase Storage
+        setProgress(30);
+        const uploadRes = await fetch(signedUrl, {
+          method: "PUT",
+          body: selectedFile,
+          headers: { "Content-Type": selectedFile.type },
+        });
+        if (!uploadRes.ok) throw new Error("File upload to storage failed");
+
+        // 3. Send to analysis
+        setProgress(50);
+        setStage("extracting");
+        const analysisRes = await fetch("/api/documents/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            signedPath,
+            publicUrl,
+            name: selectedFile.name,
+            type: selectedFile.type,
+          }),
+        });
+
+        if (!analysisRes.ok) {
+          const err = await analysisRes.json();
+          throw new Error(err.error || "Analysis failed");
+        }
+
+        setProgress(80);
+        setStage("analyzing");
+        const doc = await analysisRes.json();
+
+        setProgress(100);
+        setStage("done");
+        toast.success("Document analyzed successfully!");
+        setTimeout(() => router.push(`/dashboard/documents/${doc.id}`), 1000);
+      } else if (mode === "url") {
+        setProgress(40);
+        setStage("extracting");
+        const res = await fetch("/api/documents/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || "Upload failed");
+        }
+        setProgress(70);
+        setStage("analyzing");
+        const doc = await res.json();
+        setProgress(100);
+        setStage("done");
+        toast.success("Document analyzed successfully!");
+        setTimeout(() => router.push(`/dashboard/documents/${doc.id}`), 1000);
       }
-      if (mode === "url") {
-        formData.append("url", url);
-      }
-
-      setProgress(40);
-      setStage("extracting");
-
-      const res = await fetch("/api/documents/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Upload failed");
-      }
-
-      setProgress(70);
-      setStage("analyzing");
-
-      const doc = await res.json();
-
-      setProgress(100);
-      setStage("done");
-
-      toast.success("Document analyzed successfully!");
-      setTimeout(() => router.push(`/dashboard/documents/${doc.id}`), 1000);
     } catch (e) {
       setStage("error");
       setError(e instanceof Error ? e.message : "Upload failed");
