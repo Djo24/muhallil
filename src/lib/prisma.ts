@@ -4,17 +4,16 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-function getPrisma(): PrismaClient {
+function getClient(): PrismaClient {
   if (!globalForPrisma.prisma) {
-    globalForPrisma.prisma = new PrismaClient();
+    globalForPrisma.prisma = new PrismaClient({
+      log: process.env.NODE_ENV === "development" ? ["query"] : undefined,
+    });
   }
   return globalForPrisma.prisma;
 }
 
-export { getPrisma };
+const _prisma = getClient();
 
-export const prisma = new Proxy({} as PrismaClient, {
-  get(_, prop) {
-    return (getPrisma() as any)[prop];
-  },
-});
+export { getClient };
+export const prisma = _prisma;
