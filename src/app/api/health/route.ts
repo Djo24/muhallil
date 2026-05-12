@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server'
+import bcrypt from 'bcryptjs'
+import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   try {
-    const dbUrl = process.env.DATABASE_URL ? 'defined' : 'missing'
-    const { PrismaClient } = await import('@prisma/client')
-    const p = new PrismaClient()
-    await p.$connect()
-    return NextResponse.json({ db: 'ok', dbUrl, msg: 'connected' })
+    await prisma.$connect()
+    const hash = await bcrypt.hash('test', 12)
+    const users = await prisma.user.count()
+    return NextResponse.json({ db: 'ok', hash: !!hash, users })
   } catch (e: any) {
-    return NextResponse.json({ db: 'error', dbUrl: process.env.DATABASE_URL ? 'defined' : 'missing', msg: e.message }, { status: 500 })
+    return NextResponse.json({ db: 'error', msg: e.message, stack: e.stack?.split('\n').slice(0,3).join('; ') }, { status: 500 })
   }
 }
